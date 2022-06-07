@@ -1,0 +1,199 @@
+---
+title: "Gender Inequality and HIV/AIDS in Sub-saharan Africa"
+author: "Mufaro Chinake"
+date: "21/04/2022"
+output:
+   html_document:
+        number_sections: true
+        toc: true
+        toc_float: true
+        toc_depth: 2
+        theme: journal
+---
+
+<h1>1.1 Introduction</h1>
+<p>The dataset was obtained from https://data.world/makeovermonday/2021w2. The dataset was published by Visualize Gender Equality (viz5)- an initiative to help the United Nations Development Goal 5: achieve gender equality and empower all women and girls. The source of the data published in the dataset is UNICEF.
+</p>
+<p>The dataset consists of 2640 observations over 10 variables. The data was collected from 1990 to 2019 for adolescents of ages between 10 and 19 years from different African countries. The following information for each country,gender and year is also featured in the dataset: estimated incidence rate of new HIV infections per 1000 uninfected population, estimated number of annual AIDS related deaths, estimated number of people living with HIV and the estimated rate of annual AIDS related deaths per 100 000 people.
+</p>
+<h1>1.2 Explanatory Data Analysis using R programming language and Tableau</h1>
+
+<h2>1.2.1 Data cleaning</h2>
+
+<h3>1. Displaying of the first four lines of the dataset:</h3>
+```{r}
+HIV_data = read.csv("~/GitHub/HIV-AIDS in Africa/Jan 2021 Data - Viz5 Gender Inequality and HIVAIDS.csv")
+head(HIV_data,4)
+```
+
+<p>Display of the last four lines of the dataset:</p>
+```{r}
+tail(HIV_data,4)
+
+```
+<p> Displaying column names:
+</p>
+```{r}
+colnames(HIV_data)
+```
+<p>Some of the column names are incompatible with R programming language and were corrected as shown below:
+</p>
+```{r}
+library(dplyr)
+HIV_data = rename(HIV_data,Estimated_incidence_rate_of_new_HIV_infections_per1000_uninfected_populaton =Estimated.incidence.rate.of.new.HIV.infection.per.1.000.uninfected.population,
+                   Estimated_number_of_annual_AIDS_related_deaths = Estimated.number.of.annual.AIDS.related.deaths,
+                   Estimated_number_of_annual_new_HIV_infections = Estimated.number.of.annual.new.HIV.infections,
+                   Estimated_number_of_people_living_with_HIV = Estimated.number.of.people.living.with.HIV,
+                   Estimated_rate_of_annual_AIDS_related_deaths_per_100000_population = Estimated.rate.of.annual.AIDS.related.deaths..per.100.000.population)
+```
+
+<h3>2. Checking for missing information</h3>
+<p>The dataset was checked for missing information and the rows missing information were stored in a dataset called "incomplete_HIV" to observe the fields with missing data. 180 rows of the data had missing information. The summary of the dataset created is displayed below.Estimated incidence rate of new HIV infection per 1 000 uninfected population recorded 120 NA values,Estimated number of annual AIDS related deaths recorded 60 NA values,Estimated number of annual new HIV infections recorded 120 NA values, and Estimated rate of annual AIDS related deaths  per 100 000 population recorded 60 NA values.
+</p>
+```{r}
+x = which(!complete.cases(HIV_data))
+
+incomplete_HIV = HIV_data[x,]
+summary(incomplete_HIV)
+
+```
+
+<h3>3. Treating NA Values:</h3>
+<p>All the NA values for each variable will be replaced by the median because removing rows with NA values may leave leave countries with no data for some years and also outliers have little effect on the median.
+</p>
+<p>Replacing NA Values from the column "Estimated incidence rate of new HIV infection per 1 000 uninfected population" with the median- 1.15 (the median is calculated below)
+</p>
+```{r}
+summary(HIV_data$Estimated_incidence_rate_of_new_HIV_infections_per1000_uninfected_populaton)
+```
+
+
+```{r}
+HIV_data$Estimated_incidence_rate_of_new_HIV_infections_per1000_uninfected_populaton[which(is.na(HIV_data$Estimated_incidence_rate_of_new_HIV_infections_per1000_uninfected_populaton))] = 1.15
+
+
+which(!complete.cases(HIV_data$Estimated_incidence_rate_of_new_HIV_infections_per1000_uninfected_populaton))
+
+
+```
+
+<p>Replacing NA values in the column "Estimated number of annual AIDS related deaths" with the median- 100 calculated below
+</p>
+```{r}
+summary(HIV_data$Estimated_number_of_annual_AIDS_related_deaths)
+```
+
+```{r}
+HIV_data$Estimated_number_of_annual_AIDS_related_deaths[which(is.na(HIV_data$Estimated_number_of_annual_AIDS_related_deaths))] = 100
+
+
+which(!complete.cases(HIV_data$Estimated_number_of_annual_AIDS_related_deaths))
+```
+
+<p>Replacing NA values from the column "Estimated number of annual new HIV infections" with the median-500 calculated below
+</p>
+```{r}
+summary(HIV_data$Estimated_number_of_annual_new_HIV_infections)
+
+```
+```{r}
+HIV_data$Estimated_number_of_annual_new_HIV_infections[which(is.na(HIV_data$Estimated_number_of_annual_new_HIV_infections))] = 500
+
+
+which(!complete.cases(HIV_data$Estimated_number_of_annual_new_HIV_infections))
+```
+
+<p>Replacing NA values in the column "Estimated rate of annual AIDS related deaths  per 100 000 population" with the median- 9.00 calculated below
+</p>
+```{r}
+summary(HIV_data$Estimated_rate_of_annual_AIDS_related_deaths_per_100000_population)
+
+```
+
+```{r}
+HIV_data$Estimated_rate_of_annual_AIDS_related_deaths_per_100000_population[which(is.na(HIV_data$Estimated_rate_of_annual_AIDS_related_deaths_per_100000_population))] = 9
+
+
+which(!complete.cases(HIV_data$Estimated_rate_of_annual_AIDS_related_deaths_per_100000_population))
+```
+
+<p>To check if the dataset still contains NA values after replacing all the empty fields with their respective median.
+</p>
+```{r}
+which(!complete.cases(HIV_data))
+
+```
+<p>The syntax above returns an integer of zero to show that all the NA values have been replaced by the respective median.
+</p>
+
+<h3>4. Box plots for quantitative variables were ploted to check for outliers:</h3>
+
+<p>i Estimated incidence rate of new HIV infection per 1 000 uninfected population
+</p>
+```{r}
+boxplot(HIV_data$Estimated_incidence_rate_of_new_HIV_infections_per1000_uninfected_populaton,
+        main = " Estimated incidence rate of new HIV infection per 1 000 uninfected",
+        col = "blue")
+```
+<p>The boxplot above shows that the column " Estimated incidence rate of new HIV infection per 1 000 uninfected population" contains observations which are outliers.
+</p>
+<p>ii. Estimated number of annual AIDS related deaths:
+</p>
+```{r}
+boxplot(HIV_data$Estimated_number_of_annual_AIDS_related_deaths,
+        main = "Estimated number of annual AIDS related deaths",
+        col = "blue")
+```
+<p>The boxplot above shows that the column "Estimated number of annual AIDS related deaths" contains observations which are outliers.
+</p>
+<p>iii. Estimated number of annual new HIV infections
+</p>
+```{r}
+boxplot(HIV_data$Estimated_number_of_annual_new_HIV_infections,
+        main = "Estimated number of annual new HIV infections",
+        col = "blue")
+```
+<p>The boxplot above shows that the column "Estimated number of annual new HIV infections" contains observations which are outliers.
+</p>
+<p>iv. Estimated number of people living with HIV
+</p>
+```{r}
+boxplot(HIV_data$Estimated_number_of_people_living_with_HIV,
+        main = "Estimated number of people living with HIV",
+        col = "blue")
+```
+<p>The boxplot above shows that the column "Estimated number of people living with HIV" contains observations which are outliers.
+</p>
+<p>v. Estimated rate of annual AIDS related deaths  per 100 000 population
+</p>
+```{r}
+boxplot(HIV_data$Estimated_rate_of_annual_AIDS_related_deaths_per_100000_population,
+        main = "Estimated rate of annual AIDS related deaths  per 100 000 population",
+        col = "blue")
+
+```
+```{r}
+summary(HIV_data)
+```
+
+<p>NB:Outliers for each variable will not be removed or deleted because all the maximum values are realistic. Removing or replacing outliers may lead to loss of valuable information.
+</p>
+
+<h2>1.2.2 Data visualization</h2>
+<p>The clean dataset was exported to a csv file. Futher analysis and data visualization was carried out using tableau in the link provided below.
+</p>
+```{r}
+write.table(HIV_data,"HIV_clean.csv",sep = ",",row.names = F)
+```
+<p>https://public.tableau.com/app/profile/mufaro.chinake/viz/GenderinequalityinHIVAIDSinfectionsinAdolescentsinAfrica/Introduction
+</p>
+<h1>1.3 Conclusion</h1>
+<p>West and Central Africa, with the distribution of new infections between boys and girls being almost the same. Its during adolescence that the gender disparities emerge at full force: In 2019, around 130,000 adolescent girls between the ages of 10 and 19 were newly infected with HIV compared to 
+44,000 boys of the same age. Girls therefore accounted for 75 per cent of new HIV infections among adolescents, globally.4 These new infections disproportionately affect girls in countries where the HIV epidemic is driven by transmission during heterosexual intercourse, or in places where transactional sex is common. This is the case in Eastern and Southern Africa, and in West and Central Africa (the geographies of focus in this dataset where girls account for 83 per cent and 78 per cent, respectively, of new HIV infections among 
+adolescents in the 10-19 age group).There has been a fall in HIV incidence in many countries - a symptom of adolescents adopting safer sex practices - but this is not the case in sub-Saharan Africa. There, only 38% of girls and 52% of boys aged 15-19, who are sexually active with a non-regular partner, used a condom. Further to this, fewer than a third of adolescent girls and boys aged 15-19 have comprehensive knowledge of HIV. Stigma around HIV bolsters the myth that it is a disease to be shunned and ashamed of,encourages those affected and their families and communities to conceal the illness and avoid treatment, perpetuates victim blaming, intensifies stress and anxiety, and reinforces inequality. The negative impact of this high rate of adolescent HIV infection is long-term and even generational. With such high rates of transmission among adolescent girls, the prevention of imminent mother-to-child HIV transmission, becomes much harder. In 2019, it was estimated that 1.3 million pregnant women globally were living with HIV – approximately 90 per cent of whom reside in sub-Saharan Africa. Due in part to greater HIV testing coverage, 85 per cent of pregnant women living with HIV globally were receiving effective antiretroviral medicines for the prevention of mother-to-child transmission – but with significant regional disparities that range from 95 per cent in Eastern and Southern Africa to 52 per cent in Middle East and North Africa.Before the introduction of effective treatment and support programs, up to 43% of mothers living with HIV in passed the virus on to their children. However, with effective intervention, this rate can be reduced
+</p>
+
+
+
+
+
